@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PMA Matrimony — Full App (Flows 1–4)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0B2447;--navy-2:#19376D;--navy-3:#284B85;
+    --gold:#C9A227;--gold-2:#E8D8A8;--gold-soft:#FBF3D9;
+    --cream:#F8F7F4;--surface:#FFFFFF;
+    --ink:#111827;--muted:#6B7280;--line:#E5E7EB;
+    --ok:#16A34A;--warn:#F59E0B;--err:#DC2626;--info:#2563EB;
+    --radius:12px;
+    --shadow-sm:0 1px 2px rgba(15,23,42,0.06),0 1px 3px rgba(15,23,42,0.05);
+    --shadow-md:0 6px 20px -6px rgba(15,23,42,0.12),0 4px 8px -4px rgba(15,23,42,0.06);
+    --shadow-lg:0 24px 48px -16px rgba(11,36,71,0.22);
+    --topbar-h:60px;--bottomnav-h:64px;--sidenav-w:248px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{font-family:'Manrope',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--cream);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+  h1,h2,h3,h4,.serif{font-family:'EB Garamond',Georgia,serif;font-weight:500;color:var(--navy);letter-spacing:-0.2px;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+  input,select,textarea{font-family:inherit;font-size:14px;color:inherit;}
+  img{max-width:100%;display:block;}
+
+  .app{min-height:100vh;padding-top:var(--topbar-h);padding-bottom:var(--bottomnav-h);display:flex;flex-direction:column;}
+  .topbar{position:fixed;top:0;left:0;right:0;height:var(--topbar-h);background:var(--navy);color:#fff;z-index:40;display:flex;align-items:center;justify-content:space-between;padding:0 16px;gap:12px;box-shadow:var(--shadow-md);border-bottom:3px solid var(--gold);}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0;}
+  .brand .mark{width:34px;height:34px;border-radius:8px;flex-shrink:0;background:linear-gradient(135deg,var(--gold),#8B6914);display:flex;align-items:center;justify-content:center;font-family:'EB Garamond',serif;font-weight:600;font-size:16px;color:var(--navy);}
+  .brand .name{font-family:'EB Garamond',serif;font-size:16px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:#fff;white-space:nowrap;}
+  .brand .sub{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold-2);margin-top:-2px;}
+  .topbar-right{display:flex;align-items:center;gap:8px;}
+  .role-switch{display:flex;background:rgba(255,255,255,0.08);border-radius:8px;padding:3px;border:1px solid rgba(255,255,255,0.12);}
+  .role-switch button{padding:6px 10px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:rgba(255,255,255,0.7);transition:all .18s ease;}
+  .role-switch button.active{background:var(--gold);color:var(--navy);}
+  .icon-btn{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);transition:background .18s ease;font-size:16px;}
+  .icon-btn:hover{background:rgba(255,255,255,0.16);}
+  .icon-btn.menu{display:none;}
+
+  .sidenav{position:fixed;top:var(--topbar-h);left:0;bottom:0;width:var(--sidenav-w);background:var(--surface);border-right:1px solid var(--line);padding:18px 12px;overflow-y:auto;z-index:30;}
+  .sidenav h4{font-family:'Manrope',sans-serif;font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);padding:12px 12px 6px;}
+  .sidenav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;font-size:13.5px;font-weight:600;color:var(--navy);margin-bottom:2px;transition:background .15s ease,color .15s ease;}
+  .sidenav a:hover{background:var(--cream);color:var(--navy-2);}
+  .sidenav a.active{background:var(--navy);color:#fff;}
+  .sidenav a.active .badge{background:var(--gold);color:var(--navy);}
+  .sidenav .ico{width:20px;text-align:center;font-size:15px;flex-shrink:0;}
+  .sidenav .badge{margin-left:auto;font-size:10px;font-weight:800;padding:2px 7px;border-radius:10px;background:var(--cream);color:var(--muted);}
+
+  .main{margin-left:var(--sidenav-w);flex:1;padding:24px;max-width:1280px;width:100%;margin-right:auto;}
+
+  .bottomnav{position:fixed;bottom:0;left:0;right:0;height:var(--bottomnav-h);background:var(--surface);border-top:1px solid var(--line);display:none;z-index:40;padding-bottom:env(safe-area-inset-bottom);}
+  .bottomnav .nav-row{display:flex;height:var(--bottomnav-h);}
+  .bottomnav a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.3px;}
+  .bottomnav a.active{color:var(--navy-2);}
+  .bottomnav .ico{font-size:18px;}
+
+  .page-head{margin-bottom:20px;}
+  .page-head .eyebrow{font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--gold);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+  .page-head .eyebrow::before{content:"";width:24px;height:2px;background:var(--gold);border-radius:2px;}
+  .page-head h1{font-size:28px;line-height:1.2;margin-bottom:6px;}
+  .page-head p{color:var(--muted);font-size:14px;max-width:640px;}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm);}
+  .card.pad{padding:20px;}
+  .card.pad-lg{padding:28px;}
+
+  .grid{display:grid;gap:16px;}
+  .grid.cols-2{grid-template-columns:repeat(2,1fr);}
+  .grid.cols-3{grid-template-columns:repeat(3,1fr);}
+  .grid.cols-4{grid-template-columns:repeat(4,1fr);}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:8px;font-size:13.5px;font-weight:700;letter-spacing:0.2px;border:1px solid transparent;transition:all .18s ease;white-space:nowrap;}
+  .btn:disabled{opacity:0.45;cursor:not-allowed;filter:saturate(0.4);}
+  .btn-primary{background:var(--navy);color:#fff;}
+  .btn-primary:hover:not(:disabled){background:var(--navy-2);transform:translateY(-1px);box-shadow:var(--shadow-md);}
+  .btn-gold{background:linear-gradient(135deg,var(--gold),#A37E1A);color:var(--navy);}
+  .btn-gold:hover:not(:disabled){transform:translateY(-1px);box-shadow:var(--shadow-md);}
+  .btn-outline{background:transparent;border-color:var(--line);color:var(--navy);}
+  .btn-outline:hover:not(:disabled){background:var(--cream);border-color:#d1d5db;}
+  .btn-ghost{background:transparent;color:var(--navy);}
+  .btn-ghost:hover:not(:disabled){background:var(--cream);}
+  .btn-danger{background:#FEE2E2;color:#991B1B;}
+  .btn-danger:hover:not(:disabled){background:#FECACA;}
+  .btn-block{width:100%;}
+  .btn-lg{padding:14px 22px;font-size:14.5px;}
+  .btn-sm{padding:7px 12px;font-size:12px;}
+
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:11.5px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+  .field input,.field select,.field textarea{width:100%;padding:11px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:14px;color:var(--ink);transition:border-color .15s ease,box-shadow .15s ease;}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--navy-2);box-shadow:0 0 0 3px rgba(25,55,109,0.12);}
+  .field .hint{font-size:12px;color:var(--muted);margin-top:5px;}
+  .field .err{font-size:12px;color:var(--err);font-weight:600;margin-top:5px;display:none;}
+  .field.invalid input,.field.invalid select{border-color:var(--err);box-shadow:0 0 0 3px rgba(220,38,38,0.10);}
+  .field.invalid .err{display:block;}
+
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+  .row.between{justify-content:space-between;}
+  .row.end{justify-content:flex-end;}
+  .spacer{flex:1;}
+
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;letter-spacing:0.4px;text-transform:uppercase;background:var(--cream);color:var(--muted);}
+  .pill.gold{background:var(--gold-soft);color:#8B6914;}
+  .pill.ok{background:#DCFCE7;color:#166534;}
+  .pill.info{background:#DBEAFE;color:#1E40AF;}
+  .pill.warn{background:#FEF3C7;color:#92400E;}
+  .pill.err{background:#FEE2E2;color:#991B1B;}
+
+  .divider{height:1px;background:var(--line);margin:16px 0;}
+
+  .stepper{display:flex;align-items:center;gap:0;margin-bottom:22px;overflow-x:auto;padding-bottom:4px;}
+  .step{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .step .dot{width:26px;height:26px;border-radius:50%;background:var(--cream);color:var(--muted);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;transition:all .2s ease;}
+  .step .lbl{font-size:11.5px;font-weight:700;color:var(--muted);white-space:nowrap;}
+  .step.active .dot{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .step.active .lbl{color:var(--navy);}
+  .step.done .dot{background:var(--gold);color:var(--navy);border-color:var(--gold);}
+  .step.done .lbl{color:var(--gold);}
+  .step-line{width:24px;height:2px;background:var(--line);flex-shrink:0;margin:0 8px;}
+  .step-line.done{background:var(--gold);}
+
+  .toast-wrap{position:fixed;top:calc(var(--topbar-h) + 12px);right:16px;z-index:100;display:flex;flex-direction:column;gap:8px;max-width:340px;}
+  .toast{background:var(--navy);color:#fff;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);display:flex;gap:10px;align-items:flex-start;animation:slideIn .25s ease;border-left:4px solid var(--gold);}
+  .toast.ok{border-left-color:var(--ok);}
+  .toast.err{border-left-color:var(--err);}
+  .toast.info{border-left-color:var(--info);}
+  @keyframes slideIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+
+  .card-stack{position:relative;max-width:420px;margin:0 auto;min-height:560px;}
+  .profile-card{position:absolute;inset:0;background:var(--surface);border-radius:16px;box-shadow:var(--shadow-lg);overflow:hidden;display:flex;flex-direction:column;transition:transform .3s ease,opacity .3s ease;border:1px solid var(--line);}
+  .profile-card.under{transform:scale(0.96) translateY(8px);opacity:0.6;}
+  .profile-card .photo{position:relative;height:340px;background:linear-gradient(140deg,#E8D8A8 0%,#C9A227 60%,#8B6914 130%);display:flex;align-items:center;justify-content:center;color:rgba(17,24,39,0.35);}
+  .profile-card .photo .veil{position:absolute;inset:0;background:linear-gradient(160deg,rgba(11,36,71,0.55),rgba(25,55,109,0.75));backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#fff;text-align:center;padding:16px;}
+  .profile-card .photo .veil .lock{width:48px;height:48px;border-radius:50%;background:rgba(201,162,39,0.25);border:1px solid rgba(201,162,39,0.55);display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .profile-card .photo .veil small{font-size:11px;opacity:.85;}
+  .profile-card .verify-tag{position:absolute;top:14px;left:14px;background:rgba(255,255,255,0.95);border-radius:20px;padding:6px 12px;font-size:11px;font-weight:800;display:flex;align-items:center;gap:6px;color:#8B6914;}
+  .profile-card .body{padding:18px;flex:1;display:flex;flex-direction:column;}
+  .profile-card .body h3{font-size:22px;}
+  .profile-card .body .role{font-size:12px;font-weight:800;letter-spacing:0.6px;text-transform:uppercase;color:#8B6914;margin-top:6px;}
+  .profile-card .body .meta{display:flex;flex-direction:column;gap:6px;margin-top:12px;font-size:13px;color:var(--muted);}
+  .profile-card .body .meta div{display:flex;gap:8px;}
+  .profile-card .actions{display:flex;gap:10px;padding:14px;border-top:1px solid var(--line);background:var(--surface);}
+  .profile-card .actions .btn{flex:1;padding:12px;font-size:14px;}
+  .swipe-hint{text-align:center;font-size:12px;color:var(--muted);margin-top:14px;}
+
+  .list-row{display:flex;gap:14px;padding:14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);align-items:center;transition:box-shadow .15s ease,transform .15s ease;}
+  .list-row:hover{box-shadow:var(--shadow-sm);}
+  .avatar{width:46px;height:46px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--navy-2),var(--navy));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;font-family:'EB Garamond',serif;}
+  .avatar.gold{background:linear-gradient(135deg,var(--gold),#8B6914);color:var(--navy);}
+
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:var(--shadow-sm);}
+  .kpi .k{font-family:'EB Garamond',serif;font-size:28px;color:var(--navy);line-height:1;}
+  .kpi .l{font-size:11px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin-top:6px;}
+
+  .progress{height:6px;background:var(--cream);border-radius:6px;overflow:hidden;}
+  .progress > span{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#8B6914);transition:width .4s ease;}
+
+  .modal-bg{position:fixed;inset:0;background:rgba(11,36,71,0.55);backdrop-filter:blur(3px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
+  .modal-bg.open{display:flex;}
+  .modal{background:var(--surface);border-radius:14px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);border-top:4px solid var(--gold);}
+  .modal .modal-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
+  .modal .modal-body{padding:20px;}
+  .modal .modal-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;}
+
+  @media (max-width: 1024px){
+    .grid.cols-4{grid-template-columns:repeat(2,1fr);}
+    .grid.cols-3{grid-template-columns:repeat(2,1fr);}
+  }
+  @media (max-width: 768px){
+    :root{--sidenav-w:0px;}
+    .app{padding-bottom:calc(var(--bottomnav-h) + env(safe-area-inset-bottom));}
+    .sidenav{display:none;}
+    .main{margin-left:0;padding:16px;padding-bottom:24px;}
+    .bottomnav{display:block;}
+    .icon-btn.menu{display:flex;}
+    .grid.cols-2,.grid.cols-3,.grid.cols-4{grid-template-columns:1fr;}
+    .page-head h1{font-size:22px;}
+    .profile-card .photo{height:280px;}
+    .card-stack{min-height:520px;}
+  }
+  @media (max-width: 480px){
+    .brand .name{font-size:14px;letter-spacing:1px;}
+    .brand .sub{display:none;}
+    .role-switch button{padding:5px 7px;font-size:10px;}
+    .topbar{padding:0 10px;}
+  }
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;}
+  .small{font-size:12px;}
+  .muted{color:var(--muted);}
+  .center{text-align:center;}
+  .mt-1{margin-top:8px;} .mt-2{margin-top:16px;} .mt-3{margin-top:24px;} .mt-4{margin-top:32px;}
+  .mb-1{margin-bottom:8px;} .mb-2{margin-bottom:16px;} .mb-3{margin-bottom:24px;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="topbar">
+    <button class="icon-btn menu" id="menuBtn" aria-label="Menu">☰</button>
+    <div class="brand">
+      <div class="mark">P</div>
+      <div>
+        <div class="name">PMA Matrimony</div>
+        <div class="sub">The Sovereign Matrimonial Office</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="role-switch" id="roleSwitch">
+        <button data-role="member" class="active" title="Member view — onboarding, discovery, plans">Member</button>
+        <button data-role="rm" title="Relationship Manager view — Flow 4 matchmaking workflow">RM</button>
+        <button data-role="admin" title="Administrator view — assign RMs, audit trail">Admin</button>
+      </div>
+      <button class="icon-btn" id="resetBtn" title="Reset demo">↻</button>
+    </div>
+  </header>
+
+  <aside class="sidenav" id="sidenav"></aside>
+  <main class="main" id="view"></main>
+  <nav class="bottomnav" id="bottomnav"></nav>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle" style="font-size:18px;">Modal</h3>
+      <button class="icon-btn" style="background:var(--cream);color:var(--navy);border-color:var(--line);" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG
+   ============================================================ */
+const STORAGE_KEY = 'pma_state_v1';
+const DEMO_OTP = '123456';
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const defaultState = () => ({
+  role: 'member',
+  route: '#/home',
+  member: {
+    onboarding: {
+      step: 'mobile',
+      mobile: '',
+      otpEntered: '',
+      details: { name:'', dob:'', gender:'', community:'', city:'', education:'', profession:'' },
+      photoUploaded: false,
+      aiCheck: null,
+      reviewStatus: null,
+      live: false,
+    },
+    plan: null,
+    subscription: null,
+    interestsSent: [],
+    matches: [],
+    shortlist: [],
+  },
+  rm: {
+    assignedClients: [],
+    activeClientId: null,
+    callLog: [],
+    notes: {},
+    auditLog: [],
+  },
+  profiles: [
+    { id:'p1', name:'Priya S.', age:27, city:'Chennai', role:'Software Engineer • B.Com', family:'Nuclear family, 1 sibling', horoscope:'8.5 / 10 Porutham', verified:true, education:'B.Com, MS', tag:'IT / Finance' },
+    { id:'p2', name:'Arjun K.', age:31, city:'Bengaluru', role:'Cardiothoracic Surgeon • FRCS', family:'Traditional family', horoscope:'7.8 / 10 Porutham', verified:true, education:'MBBS, MS — AIIMS', tag:'Medicine' },
+    { id:'p3', name:'Divya R.', age:29, city:'Mumbai', role:'Investment Principal • CFA', family:'Business family', horoscope:'9.1 / 10 Porutham', verified:true, education:'CFA, MBA — IIM A', tag:'Finance' },
+    { id:'p4', name:'Karthik M.', age:33, city:'Hyderabad', role:'Fintech Founder • MD', family:'Nuclear family, 1 sibling', horoscope:'8.2 / 10 Porutham', verified:true, education:'MBA — ISB', tag:'Founders' },
+    { id:'p5', name:'Ananya M.', age:28, city:'Delhi', role:'Architect • Heritage Trustee', family:'Heritage business family', horoscope:'8.8 / 10 Porutham', verified:true, education:'M.Arch — CEPT', tag:'Architecture' },
+    { id:'p6', name:'Vikram N.', age:35, city:'Bengaluru', role:'Investment Principal • PE', family:'Traditional family', horoscope:'7.4 / 10 Porutham', verified:true, education:'CFA, MBA — IIM A', tag:'Finance' },
+  ],
+});
+
+let state = loadState();
+
+function loadState(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    return Object.assign(defaultState(), parsed);
+  } catch { return defaultState(); }
+}
+function saveState(){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+}
+function resetState(){
+  localStorage.removeItem(STORAGE_KEY);
+  state = defaultState();
+  saveState();
+  toast('Demo reset. Starting fresh.', 'ok');
+  render();
+}
+
+/* ---------- ROUTER ---------- */
+function navigate(route){
+  state.route = route;
+  saveState();
+  render();
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+window.addEventListener('hashchange', () => {
+  state.route = window.location.hash || '#/home';
+  render();
+});
+
+/* ============================================================
+   UTILS  —  ★ FIXED h() HERE ★
+   ============================================================
+   The previous version did el.setAttribute('disabled', false),
+   which HTML interprets as disabled="false" → STILL DISABLED.
+   We now skip boolean-false attributes entirely.
+   ============================================================ */
+function $(sel, root=document){ return root.querySelector(sel); }
+function $$(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
+
+function h(tag, attrs={}, children=[]){
+  const el = document.createElement(tag);
+  for(const [k,v] of Object.entries(attrs)){
+    if(k === 'class') el.className = v;
+    else if(k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2).toLowerCase(), v);
+    else if(k === 'html') el.innerHTML = v;
+    else if(v === false || v === null || v === undefined) continue;   // ← FIX
+    else if(v === true) el.setAttribute(k, '');
+    else el.setAttribute(k, v);
+  }
+  (Array.isArray(children) ? children : [children]).forEach(c => {
+    if(c == null) return;
+    el.appendChild(c instanceof Node ? c : document.createTextNode(String(c)));
+  });
+  return el;
+}
+
+function toast(msg, kind='info', timeout=3200){
+  const el = h('div', { class:`toast ${kind}` }, [msg]);
+  $('#toasts').appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateX(20px)'; setTimeout(() => el.remove(), 220); }, timeout);
+}
+function openModal({ title, body, actions }){
+  $('#modalTitle').textContent = title;
+  $('#modalBody').innerHTML = body;
+  $('#modalFoot').innerHTML = '';
+  (actions || []).forEach(a => {
+    const b = h('button', { class:`btn ${a.class || 'btn-outline'}` }, [a.label]);
+    b.onclick = () => { if(a.onClick) a.onClick(); if(a.close !== false) closeModal(); };
+    $('#modalFoot').appendChild(b);
+  });
+  $('#modalBg').classList.add('open');
+}
+function closeModal(){ $('#modalBg').classList.remove('open'); }
+$('#modalBg').addEventListener('click', e => { if(e.target === $('#modalBg')) closeModal(); });
+
+function fmtDate(iso){
+  if(!iso) return '—';
+  return new Date(iso).toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function nowISO(){ return new Date().toISOString(); }
+function initials(name){
+  return (name || '?').split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase();
+}
+function audit(action, target, actor='system'){
+  state.rm.auditLog.unshift({ at: nowISO(), actor, action, target: target || '—' });
+  state.rm.auditLog = state.rm.auditLog.slice(0, 200);
+  saveState();
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render(){
+  renderNav();
+  const route = state.route || '#/home';
+  const parts = route.replace(/^#\//,'').split('/');
+  const view = $('#view');
+  view.innerHTML = '';
+
+  const map = {
+    'home':        viewHome,
+    'onboarding':  viewOnboarding,
+    'discover':    viewDiscover,
+    'advanced':    viewAdvanced,
+    'profile':     () => viewProfileDetail(parts[1]),
+    'plans':       viewPlans,
+    'checkout':    viewCheckout,
+    'invoice':     viewInvoice,
+    'rm':          viewRM,
+    'rm-client':   () => viewRMClient(parts[1]),
+    'audit':       viewAudit,
+    'admin':       viewAdmin,
+    'me':          viewMe,
+    'matches':     viewMatches,
+  };
+
+  const fn = map[parts[0]] || viewHome;
+  fn(view, parts);
+}
+
+function renderNav(){
+  const memberLinks = [
+    { href:'#/home',     ico:'⌂', label:'Home' },
+    { href:'#/onboarding',ico:'✎', label: state.member.onboarding.live ? 'Onboarding ✓' : 'Onboarding' },
+    { href:'#/discover', ico:'◇', label:'Discover' },
+    { href:'#/advanced', ico:'⚙', label:'Advanced Search' },
+    { href:'#/matches',  ico:'♥', label:'Matches', badge: state.member.matches.length || null },
+    { href:'#/plans',    ico:'₹', label:'Plans' },
+    { href:'#/me',       ico:'◉', label:'My Profile' },
+  ];
+  const rmLinks = [
+    { href:'#/rm',       ico:'⌂', label:'RM Workspace' },
+    { href:'#/audit',    ico:'▤', label:'Audit Trail' },
+  ];
+  const adminLinks = [
+    { href:'#/admin',    ico:'⌂', label:'Admin Dashboard' },
+    { href:'#/rm',       ico:'◈', label:'RM Workspace' },
+    { href:'#/audit',    ico:'▤', label:'Audit Trail' },
+  ];
+  const links = state.role === 'admin' ? adminLinks : state.role === 'rm' ? rmLinks : memberLinks;
+  const active = (state.route || '#/home').split('/').slice(0,2).join('/');
+
+  const sn = $('#sidenav');
+  sn.innerHTML = '';
+  sn.appendChild(h('h4', {}, [state.role === 'member' ? 'Member' : state.role === 'rm' ? 'Relationship Manager' : 'Administrator']));
+  links.forEach(l => {
+    const a = h('a', { href:l.href, class: active === l.href.split('/').slice(0,2).join('/') ? 'active' : '' },
+      [ h('span', { class:'ico' }, [l.ico]), h('span', {}, [l.label]), l.badge ? h('span', { class:'badge' }, [String(l.badge)]) : null ]
+    );
+    sn.appendChild(a);
+  });
+
+  const bn = $('#bottomnav');
+  bn.innerHTML = '';
+  const row = h('div', { class:'nav-row' });
+  links.slice(0,5).forEach(l => {
+    const a = h('a', { href:l.href, class: active === l.href.split('/').slice(0,2).join('/') ? 'active' : '' },
+      [ h('span', { class:'ico' }, [l.ico]), h('span', {}, [l.label]) ]);
+    row.appendChild(a);
+  });
+  bn.appendChild(row);
+}
+
+/* ============================================================
+   VIEWS
+   ============================================================ */
+function viewHome(view){
+  const m = state.member;
+  const live = m.onboarding.live;
+  const plan = m.subscription?.plan || '—';
+  const interests = m.interestsSent.length;
+  const matches = m.matches.length;
+
+  view.appendChild(h('div', { class:'page-head' }, [
+    h('div', { class:'eyebrow' }, ['Member Dashboard']),
+    h('h1', {}, [live ? `Welcome back${m.onboarding.details.name ? ', ' + m.onboarding.details.name.split(' ')[0] : ''}.` : 'Welcome to PMA Matrimony.']),
+    h('p', {}, [live ? 'Your profile is verified and live. Continue your journey to find a meaningful match.' : 'Complete a short onboarding to publish your verified profile and begin receiving introductions.']),
+  ]));
+
+  const kpis = h('div', { class:'grid cols-4 mb-3' });
+  kpis.appendChild(kpi('Profile', live ? 'Live' : 'Draft'));
+  kpis.appendChild(kpi('Plan', plan === '—' ? '—' : plan.charAt(0).toUpperCase()+plan.slice(1)));
+  kpis.appendChild(kpi('Interests Sent', String(interests)));
+  kpis.appendChild(kpi('Mutual Matches', String(matches)));
+  view.appendChild(kpis);
+
+  if(!live){
+    const cta = h('div', { class:'card pad-lg mb-3' });
+    cta.appendChild(h('h3', { style:'font-size:20px;margin-bottom:6px;' }, ['Start onboarding']));
+    cta.appendChild(h('p', { class:'muted small mb-2' }, ['Flow 1 — Mobile → OTP → Basic Details → Photo Upload → AI Content Check → Verification Review → Profile Live.']));
+    const btn = h('button', { class:'btn btn-primary btn-lg' }, ['Begin onboarding →']);
+    btn.onclick = () => navigate('#/onboarding');
+    cta.appendChild(btn);
+    view.appendChild(cta);
+  }
+
+  const qa = h('div', { class:'grid cols-3' });
+  qa.appendChild(actionCard('◇','Discover profiles','Browse verified matches and send interest.', () => navigate('#/discover')));
+  qa.appendChild(actionCard('♥','My matches','View mutual matches and revealed contacts.', () => navigate('#/matches')));
+  qa.appendChild(actionCard('₹','Membership plans','Compare Gold, Diamond, and Sovereign Elite.', () => navigate('#/plans')));
+  view.appendChild(qa);
+}
+
+function kpi(label, value){
+  return h('div', { class:'kpi' }, [
+    h('div', { class:'k' }, [value]),
+    h('div', { class:'l' }, [label]),
+  ]);
+}
+function actionCard(ico, title, desc, onClick){
+  const c = h('div', { class:'card pad', style:'cursor:pointer;' });
+  c.appendChild(h('div', { style:'font-size:22px;margin-bottom:10px;color:var(--gold);' }, [ico]));
+  c.appendChild(h('h4', { style:'font-size:16px;margin-bottom:4px;' }, [title]));
+  c.appendChild(h('p', { class:'muted small' }, [desc]));
+  c.onclick = onClick;
+  return c;
+}
+
+/* ============ FLOW 1 — ONBOARDING ============ */
+function viewOnboarding(view, parts){
+  const sub = parts[1] || state.member.onboarding.step;
+  const steps = [
+    { key:'mobile',  label:'Mobile' },
+    { key:'otp',     label:'OTP' },
+    { key:'details', label:'Details' },
+    { key:'photo',   label:'Photo' },
+    { key:'ai',      label:'AI Check' },
+    { key:'review',  label:'Review' },
+    { key:'live',    label:'Live' },
+  ];
+  const currentIdx = steps.findIndex(s => s.key === sub);
+
+  view.appendChild(h('div', { class:'page-head' }, [
+    h('div', { class:'eyebrow' }, ['Flow 1 — Onboarding & Verification']),
+    h('h1', {}, ['Create your verified profile']),
+    h('p', {}, ['Every profile is Aadhaar-verified, photo-reviewed, and manually approved before going live.']),
+  ]));
+
+  const st = h('div', { class:'stepper mb-3' });
+  steps.forEach((s, i) => {
+    const done = i < currentIdx || (i === currentIdx && state.member.onboarding.live);
+    const cls = i === currentIdx ? 'active' : done ? 'done' : '';
+    const step = h('div', { class:`step ${cls}` }, [
+      h('div', { class:'dot' }, [done ? '✓' : String(i+1)]),
+      h('div', { class:'lbl' }, [s.label]),
+    ]);
+    st.appendChild(step);
+    if(i < steps.length-1) st.appendChild(h('div', { class:`step-line ${i < currentIdx ? 'done' : ''}` }));
+  });
+  view.appendChild(st);
+
+  const body = h('div');
+  view.appendChild(body);
+
+  if(sub === 'mobile')    renderOnboardMobile(body);
+  if(sub === 'otp')       renderOnboardOTP(body);
+  if(sub === 'details')   renderOnboardDetails(body);
+  if(sub === 'photo')     renderOnboardPhoto(body);
+  if(sub === 'ai')        renderOnboardAI(body);
+  if(sub === 'review')    renderOnboardReview(body);
+  if(sub === 'live')      renderOnboardLive(body);
+}
+
+function goOnboard(step){
+  state.member.onboarding.step = step;
+  saveState();
+  navigate('#/onboarding/' + step);
+}
+
+function renderOnboardMobile(root){
+  const c = h('div', { class:'card pad-lg', style:'max-width:520px;margin:0 auto;' });
+  c.appendChild(h('h3', { style:'font-size:20px;margin-bottom:4px;' }, ['Verify your number']));
+  c.appendChild(h('p', { class:'muted small mb-2' }, ['We send a one-time code to confirm your identity.']));
+
+  const f = h('div', { class:'field' });
+  f.appendChild(h('label', {}, ['Mobile number']));
+  const inp = h('input', { type:'tel', placeholder:'98765 43210', value: state.member.onboarding.mobile || '' });
+  f.appendChild(inp);
+  f.appendChild(h('div', { class:'hint' }, ['Indian mobile, 10 digits. Demo OTP: 123456.']));
+  f.appendChild(h('div', { class:'err' }, ['Please enter a valid 10-digit Indian mobile number.']));
+  c.appendChild(f);
+
+  const btn = h('button', { class:'btn btn-primary btn-block btn-lg' }, ['Send OTP →']);
+  btn.onclick = () => {
+    const v = inp.value.trim().replace(/[\s\-()]/g, '').replace(/^(\+?91|0)/,'');
+    if(!/^[6-9]\d{9}$/.test(v)){
+      f.classList.add('invalid'); return;
+    }
+    f.classList.remove('invalid');
+    state.member.onboarding.mobile = v;
+    saveState();
+    toast('OTP sent to +91 ' + v, 'ok');
+    goOnboard('otp');
+  };
+  c.appendChild(btn);
+  root.appendChild(c);
+}
+
+function renderOnboardOTP(root){
+  const c = h('div', { class:'card pad-lg', style:'max-width:520px;margin:0 auto;' });
+  c.appendChild(h('h3', { style:'font-size:20px;margin-bottom:4px;' }, ['Enter the 6-digit OTP']));
+  c.appendChild(h('p', { class:'muted small mb-2' }, ['Sent to +91 ' + state.member.onboarding.mobile + '. Demo code: 123456.']));
+
+  const f = h('div', { class:'field' });
+  f.appendChild(h('label', {}, ['OTP']));
+  const inp = h('input', { type:'tel', maxlength:'6', placeholder:'••••••', style:'letter-spacing:8px;font-size:20px;text-align:center;', value: state.member.onboarding.otpEntered || '' });
+  f.appendChild(inp);
+  f.appendChild(h('div', { class:'err' }, ['Incorrect code. Please try again.']));
+  c.appendChild(f);
+
+  const row = h('div', { class:'row' });
+  const back = h('button', { class:'btn btn-outline' }, ['← Back']);
+  back.onclick = () => goOnboard('mobile');
+  row.appendChild(back);
+  const btn = h('button', { class:'btn btn-primary', style:'flex:1;' }, ['Verify & Continue →']);
+  btn.onclick = () => {
+    if(inp.value.trim() !== DEMO_OTP){ f.classList.add('invalid'); return; }
+    f.classList.remove('invalid');
+    state.member.onboarding.otpEntered = inp.value.trim();
+    saveState();
+    toast('Mobile verified.', 'ok');
+    goOnboard('details');
+  };
+  row.appendChild(btn);
+  c.appendChild(row);
+  root.appendChild(c);
+}
+
+function renderOnboardDetails(root){
+  const d = state.member.onboarding.details;
+  const c = h('div', { class:'card pad-lg', style:'max-width:640px;margin:0 auto;' });
+  c.appendChild(h('h3', { style:'font-size:20px;margin-bottom:4px;' }, ['Basic details & profile']));
+  c.appendChild(h('p', { class:'muted small mb-2' }, ['Used to build your initial dossier. You can refine later.']));
+
+  const fields = [
+    ['name','Full name','text','e.g. Priya S.'],
+    ['dob','Date of birth','date',''],
+    ['gender','Gender','select',['Female','Male','Other']],
+    ['community','Community','text','e.g. Iyer, Punjabi'],
+    ['city','City','text','e.g. Chennai'],
+    ['education','Education','text','e.g. B.Com, MS'],
+    ['profession','Profession','text','e.g. Software Engineer'],
+  ];
+  const inputs = {};
+  fields.forEach(([k,label,type,extra]) => {
+    const f = h('div', { class:'field' });
+    f.appendChild(h('label', {}, [label]));
+    let el;
+    if(type === 'select'){
+      el = h('select');
+      el.appendChild(h('option', { value:'' }, ['Select…']));
+      extra.forEach(o => el.appendChild(h('option', { value:o }, [o])));
+    } else {
+      el = h('input', { type, placeholder: extra || '' });
+    }
+    el.value = d[k] || '';
+    f.appendChild(el);
+    c.appendChild(f);
+    inputs[k] = el;
+  });
+
+  const row = h('div', { class:'row' });
+  const back = h('button', { class:'btn btn-outline' }, ['← Back']);
+  back.onclick = () => goOnboard('otp');
+  row.appendChild(back);
+  const btn = h('button', { class:'btn btn-primary', style:'flex:1;' }, ['Save & Continue →']);
+  btn.onclick = () => {
+    const missing = fields.find(([k]) => !inputs[k].value.trim());
+    if(missing){ toast('Please fill all fields.', 'err'); return; }
+    state.member.onboarding.details = Object.fromEntries(fields.map(([k]) => [k, inputs[k].value.trim()]));
+    saveState();
+    goOnboard('photo');
+  };
+  row.appendChild(btn);
+  c.appendChild(row);
+  root.appendChild(c);
+}
+
+function renderOnboardPhoto(root){
+  const c = h('div', { class:'card pad-lg', style:'max-width:520px;margin:0 auto;text-align:center;' });
+  c.appendChild(h('h3', { style:'font-size:20px;margin-bottom:4px;' }, ['Upload your photo']));
+  c.appendChild(h('p', { class:'muted small mb-2' }, ['Server-side watermark is applied automatically. Your photo stays private until mutual consent.']));
+
+  const box = h('div', {
+    style:'border:2px dashed var(--line);border-radius:14px;padding:40px 20px;background:var(--cream);cursor:pointer;'
+  });
+  if(state.member.onboarding.photoUploaded){
+    box.innerHTML = '✓ <strong>Photo uploaded</strong><br><span class="small muted">Watermark applied on the server.</span>';
+  } else {
+    box.innerHTML = '⬆ <strong>Tap to upload</strong><br><span class="small muted">JPG or PNG • max 5MB</span>';
+  }
+  box.onclick = () => {
+    state.member.onboarding.photoUploaded = true;
+    saveState();
+    toast('Photo uploaded. Watermark queued.', 'ok');
+    render();
+  };
+  c.appendChild(box);
+
+  const row = h('div', { class:'row mt-3' });
+  const back = h('button', { class:'btn btn-outline' }, ['← Back']);
+  back.onclick = () => goOnboard('details');
+  row.appendChild(back);
+  // ★ Now that h() skips false attributes, this button correctly enables after upload.
+  const btn = h('button', { class:'btn btn-primary', style:'flex:1;', disabled: !state.member.onboarding.photoUploaded }, ['Continue to AI check →']);
+  btn.onclick = () => { goOnboard('ai'); runAICheck(); };
+  row.appendChild(btn);
+  c.appendChild(row);
+  root.appendChild(c);
+}
+
+function runAICheck(){
+  state.member.onboarding.aiCheck = 'running';
+  saveState();
+  setTimeout(() => {
+    state.member.onboarding.aiCheck = 'passed';
+    saveState();
+    toast('AI content check passed.', 'ok');
+    if(state.route === '#/onboarding/ai') render();
+  }, 1800);
+}
+
+function renderOnboardAI(root){
+  const s = state.member.onboarding.aiCheck;
+  const c = h('div', { class:'card pad-lg', style:'max-width:520px;margin:0 auto;' });
+  c.appendChild(h('h3', { style:'font-size:20px;margin-bottom:4px;' }, ['Automated AI content check']));
+  c.appendChild(h('p', { class:'muted small mb-2' }, ['We scan for stock images, blur, and duplicate faces before human review.']));
+
+  if(!s || s === 'running'){
+    const bar = h('div', { class:'progress' }, [ h('span', { style:'width:45%;' }) ]);
+    c.appendChild(bar);
+    c.appendChild(h('p', { class:'muted small mt-2' }, ['Running checks…']));
+    if(!s) runAICheck();
+  } else if(s === 'passed'){
+    c.appendChild(h('div', { class:'pill ok mb-2' }, ['✓ AI check passed']));
+    c.appendChild(h('p', { class:'muted small mb-3' }, ['No flags raised. Your photo moves to the verification team.']));
+    const row = h('div', { class:'row' });
+    const back = h('button', { class:'btn btn-outline' }, ['← Back']);
+    back.onclick = () => goOnboard('photo');
+    row.appendChild(back);
+    const btn = h('button', { class:'btn btn-primary', style:'flex:1;' }, ['Send to verification team →']);
+    btn.onclick = () => {
+      state.member.onboarding.reviewStatus = 'pending';
+      saveState();
+      audit('Onboarding submitted for review', state.member.onboarding.details.name || '—', 'member');
+      goOnboard('review');
+    };
+    row.appendChild(btn);
+    c.appendChild(row);
+  } else if(s === 'failed'){
+    c.appendChild(h('div', { class:'pill err mb-2' }, ['⚠ AI check flagged content']));
+    c.appendChild(h('p', { class:'muted small mb-3' }, ['Please re-upload a clear, single-person photo.']));
+    const btn = h('button', { class:'btn btn-primary btn-block' }, ['Re-upload photo →']);
+    btn.onclick = () => goOnboard('photo');
+    c.appendChild(btn);
+  }
+  root.appendChild(c);
+}
+
+function renderOnboardReview(root){
+  const st = state.member.onboarding.reviewStatus;
+  const c = h('div', { class:'card pad-lg', style:'max-width:560px;margin:0 auto;' });
+  c.appendChild(h('h3', { style:'font-size:20px;margin-bottom:4px;' }, ['Verification team review']));
+  c.appendChild(h('p', { class:'muted small mb-2' }, ['A human moderator reviews each profile within 24–48 hours.']));
+
+  if(st === 'pending'){
+    c.appendChild(h('div', { class:'pill warn mb-2' }, ['⏳ Pending review']));
+    c.appendChild(h('p', { class:'muted small mb-3' }, ['We\'ll notify you by SMS and email once a decision is made.']));
+    const row = h('div', { class:'row' });
+    const approve = h('button', { class:'btn btn-gold', style:'flex:1;' }, ['Simulate: Approve']);
+    approve.onclick = () => {
+      state.member.onboarding.reviewStatus = 'approved';
+      state.member.onboarding.live = true;
+      saveState();
+      audit('Profile approved & live', state.member.onboarding.details.name || '—', 'verification-team');
+      toast('Profile approved. Welcome to PMA.', 'ok');
+      goOnboard('live');
+    };
+    row.appendChild(approve);
+    const reject = h('button', { class:'btn btn-danger' }, ['Simulate: Reject']);
+    reject.onclick = () => {
+      state.member.onboarding.reviewStatus = 'rejected';
+      saveState();
+      audit('Profile rejected', state.member.onboarding.details.name || '—', 'verification-team');
+      toast('Profile rejected. Please re-submit.', 'err');
+      goOnboard('photo');
+    };
+    row.appendChild(reject);
+    c.appendChild(row);
+  } else if(st === 'approved'){
+    c.appendChild(h('div', { class:'pill ok mb-2' }, ['✓ Approved']));
+    const btn = h('button', { class:'btn btn-primary btn-block' }, ['Continue →']);
+    btn.onclick = () => goOnboard('live');
+    c.appendChild(btn);
+  } else if(st === 'rejected'){
+    c.appendChild(h('div', { class:'pill err mb-2' }, ['⚠ Rejected — please re-submit']));
+    const btn = h('button', { class:'btn btn-primary btn-block' }, ['Re-upload photo →']);
+    btn.onclick = () => goOnboard('photo');
+    c.appendChild(btn);
+  }
+  root.appendChild(c);
+}
+
+function renderOnboardLive(root){
+  const c = h('div', { class:'card pad-lg', style:'max-width:520px;margin:0 auto;text-align:center;' });
+  c.appendChild(h('div', { style:'font-size:56px;color:var(--ok);line-height:1;margin-bottom:10px;' }, ['✓']));
+  c.appendChild(h('h3', { style:'font-size:24px;margin-bottom:6px;' }, ['Your profile is live']));
+  c.appendChild(h('p', { class:'muted small mb-3' }, ['Verified profiles now appear in the discovery feed and can receive introductions.']));
+
+  const row = h('div', { class:'row', style:'justify-content:center;' });
+  const b1 = h('button', { class:'btn btn-primary' }, ['Discover matches →']);
+  b1.onclick = () => navigate('#/discover');
+  row.appendChild(b1);
+  const b2 = h('button', { class:'btn btn-outline' }, ['View my profile']);
+  b2.onclick = () => navigate('#/me');
+  row.appendChild(b2);
+  c.appendChild(row);
+  root.appendChild(c);
+}
+
+/* ============ FLOW 2 — DISCOVERY ============ */
+function viewDiscover(view){
+  view.appendChild(h('div', { class:'page-head' }, [
+    h('div', { class:'eyebrow' }, ['Flow 2 — Discovery & Express Interest']),
+    h('h1', {}, ['Discover verified matches']),
+    h('p', {}, ['Browse the vetted registry. Send an interest — recipients are notified, and mutual matches unlock contact reveal.']),
+  ]));
+
+  if(!state.member.onboarding.live){
+    view.appendChild(h('div', { class:'card pad-lg center' }, [
+      h('p', { class:'muted small mb-2' }, ['Your profile isn\'t live yet. Finish onboarding to appear in the registry and unlock unlimited browse.']),
+      h('button', { class:'btn btn-primary', onclick: () => navigate('#/onboarding') }, ['Complete onboarding →']),
+    ]));
+    return;
+  }
+
+  const filtered = state.profiles.filter(p => !state.member.interestsSent.find(i => i.profileId === p.id));
+  const stack = h('div', { class:'card-stack' });
+  const top = filtered[0];
+  const under = filtered[1];
+
+  if(!top){
+    stack.appendChild(h('div', { class:'card pad-lg center', style:'position:relative;' }, [
+      h('h3', { style:'font-size:20px;margin-bottom:8px;' }, ['You\'ve reviewed everyone']),
+      h('p', { class:'muted small mb-2' }, ['Check back soon — new verified profiles are added weekly.']),
+      h('button', { class:'btn btn-outline', onclick: () => navigate('#/matches') }, ['View my matches →']),
+    ]));
+    view.appendChild(stack);
+    return;
+  }
+
+  if(under) stack.appendChild(renderProfileCard(under, true));
+  if(top) stack.appendChild(renderProfileCard(top, false));
+  view.appendChild(stack);
+
+  view.appendChild(h('p', { class:'swipe-hint' }, ['Tap PASS or INTEREST — no swipe gesture required.']));
+
+  const adv = h('div', { class:'center mt-3' });
+  const b = h('button', { class:'btn btn-outline' }, ['Open Advanced Search →']);
+  b.onclick = () => navigate('#/advanced');
+  adv.appendChild(b);
+  view.appendChild(adv);
+}
+
+function renderProfileCard(p, isUnder){
+  const c = h('div', { class:`profile-card ${isUnder ? 'under' : ''}` });
+  const photo = h('div', { class:'photo' });
+  photo.appendChild(h('div', { class:'verify-tag' }, ['🛡 Verified']));
+  const veil = h('div', { class:'veil' });
+  veil.appendChild(h('div', { class:'lock' }, ['🔒']));
+  veil.appendChild(h('div', { style:'font-weight:700;' }, ['Identity Protected']));
+  veil.appendChild(h('small', {}, ['Photo revealed on mutual consent']));
+  photo.appendChild(veil);
+  c.appendChild(photo);
+
+  const body = h('div', { class:'body' });
+  body.appendChild(h('h3', {}, [`${p.name}, ${p.age}`]));
+  body.appendChild(h('div', { class:'role' }, [p.role]));
+  const meta = h('div', { class:'meta' });
+  meta.appendChild(h('div', {}, ['📍 ' + p.city]));
+  meta.appendChild(h('div', {}, ['🎓 ' + p.education]));
+  meta.appendChild(h('div', {}, ['🏛 ' + p.family]));
+  meta.appendChild(h('div', {}, ['✦ ' + p.horoscope]));
+  body.appendChild(meta);
+  c.appendChild(body);
+
+  if(!isUnder){
+    const actions = h('div', { class:'actions' });
+    const pass = h('button', { class:'btn btn-outline' }, ['PASS']);
+    pass.onclick = () => {
+      audit('Passed profile', p.name, 'member');
+      toast('Passed. Next profile.', 'info');
+      state.profiles.push(state.profiles.shift());
+      saveState();
+      render();
+    };
+    actions.appendChild(pass);
+    const interest = h('button', { class:'btn btn-primary' }, ['♥ INTEREST']);
+    interest.onclick = () => sendInterest(p);
+    actions.appendChild(interest);
+    c.appendChild(actions);
+  }
+  return c;
+}
+
+function sendInterest(p){
+  state.member.interestsSent.unshift({ profileId:p.id, at: nowISO(), status:'pending' });
+  audit('Interest sent', p.name, 'member');
+  saveState();
+  openModal({
+    title: 'Interest sent',
+    body: `
+      <p class="muted small mb-2">Your interest has been sent to <strong>${p.name}</strong>. They will be notified and can accept or decline.</p>
+      <div class="card pad" style="background:var(--cream);">
+        <div class="small muted">Next step</div>
+        <div style="font-weight:700;margin-top:4px;">Awaiting recipient response</div>
+      </div>
+      <p class="muted small mt-2">If they accept, you become a mutual match and contact reveal is unlocked (paid plans).</p>
+    `,
+    actions: [
+      { label:'Simulate: Recipient accepts', class:'btn-gold', onClick: () => acceptInterest(p) },
+      { label:'Close', class:'btn-outline' },
+    ]
+  });
+}
+
+function acceptInterest(p){
+  const entry = state.member.interestsSent.find(i => i.profileId === p.id);
+  if(entry) entry.status = 'accepted';
+  state.member.matches.unshift({ profileId:p.id, at: nowISO() });
+  audit('Mutual match formed', p.name, 'system');
+  saveState();
+  toast('It\'s a match! Contact reveal unlocked.', 'ok');
+  setTimeout(() => navigate('#/matches'), 400);
+}
+
+function viewAdvanced(view){
+  view.appendChild(h('div', { class:'page-head' }, [
+    h('div', { class:'eyebrow' }, ['Advanced Search']),
+    h('h1', {}, ['Refine your discovery']),
+    h('p', {}, ['Filter by age, community, location, education, profession, and family type.']),
+  ]));
+
+  const c = h('div', { class:'card pad-lg', style:'max-width:760px;' });
+  const grid = h('div', { class:'grid cols-2' });
+  const filters = [
+    ['age','Age range','select',['24 – 29','30 – 35','36 – 42','42+']],
+    ['community','Community','text','e.g. Iyer'],
+    ['location','Location','text','e.g. Chennai'],
+    ['education','Education','text','e.g. MS'],
+    ['profession','Profession','text','e.g. Software Engineer'],
+    ['family','Family type','select',['Nuclear','Joint','Business family']],
+  ];
+  filters.forEach(([k,label,type,extra]) => {
+    const f = h('div', { class:'field' });
+    f.appendChild(h('label', {}, [label]));
+    let el;
+    if(type === 'select'){
+      el = h('select');
+      el.appendChild(h('option', { value:'' }, ['Any']));
+      extra.forEach(o => el.appendChild(h('option', { value:o }, [o])));
+    } else {
+      el = h('input', { type:'text', placeholder: extra || '' });
+    }
+    f.appendChild(el);
+    grid.appendChild(f);
+  });
+  c.appendChild(grid);
+
+  const row = h('div', { class:'row mt-2' });
+  const apply = h('button', { class:'btn btn-primary', style:'flex:1;' }, ['Apply filters']);
+  apply.onclick = () => { toast('Filters applied. Showing refined results.', 'ok'); navigate('#/discover'); };
+  row.appendChild(apply);
+  const reset = h('button', { class:'btn btn-outline' }, ['Reset']);
+  reset.onclick = () => render();
+  row.appendChild(reset);
+  c.appendChild(row);
+
+  view.appendChild(c);
+}
+
+function viewProfileDetail(id){
+  const p = state.profiles.find(x => x.id === id);
+  const view = $('#view');
+  view.innerHTML = '';
+  if(!p){ view.appendChild(h('p', { class:'muted' }, ['Profile not found.'])); return; }
+
+  const back = h('button', { class:'btn btn-outline mb-2' }, ['← Back to discovery']);
+  back.onclick = () => navigate('#/discover');
+  view.appendChild(back);
+
+  const c = h('div', { class:'card pad-lg', style:'max-width:720px;' });
+  c.appendChild(h('h2', { style:'font-size:26px;margin-bottom:4px;' }, [`${p.name}, ${p.age}`]));
+  c.appendChild(h('div', { class:'role', style:'font-size:12px;font-weight:800;letter-spacing:0.6px;text-transform:uppercase;color:#8B6914;margin-bottom:14px;' }, [p.role]));
+
+  const grid = h('div', { class:'grid cols-2 mb-2' });
+  [['Education', p.education], ['City', p.city], ['Family', p.family], ['Horoscope match', p.horoscope]].forEach(([k,v]) => {
+    const cell = h('div', { class:'card pad', style:'background:var(--cream);' });
+    cell.appendChild(h('div', { class:'small muted', style:'font-weight:800;letter-spacing:0.5px;text-transform:uppercase;font-size:10px;' }, [k]));
+    cell.appendChild(h('div', { style:'font-weight:700;margin-top:4px;' }, [v]));
+    grid.appendChild(cell);
+  });
+  c.appendChild(grid);
+
+  const actions = h('div', { class:'row' });
+  const pass = h('button', { class:'btn btn-outline' }, ['PASS']);
+  pass.onclick = () => { toast('Passed.', 'info'); navigate('#/discover'); };
+  actions.appendChild(pass);
+  const interest = h('button', { class:'btn btn-primary', style:'flex:1;' }, ['♥ Send INTEREST']);
+  interest.onclick = () => sendInterest(p);
+  actions.appendChild(interest);
+  c.appendChild(actions);
+
+  view.appendChild(c);
+}
+
+function viewMatches(view){
+  view.appendChild(h('div', { class:'page-head' }, [
+    h('div', { class:'eyebrow' }, ['Matches']),
+    h('h1', {}, ['Your mutual matches']),
+    h('p', {}, ['Contact details are revealed once both sides have accepted.']),
+  ]));
+
+  if(!state.member.matches.length){
+    view.appendChild(h('div', { class:'card pad-lg center' }, [
+      h('p', { class:'muted small mb-2' }, ['No mutual matches yet. Keep browsing — an interest could become a match.']),
+      h('button', { class:'btn btn-primary', onclick: () => navigate('#/discover') }, ['Discover profiles →']),
+    ]));
+    return;
+  }
+
+  const list = h('div', { class:'grid' });
+  state.member.matches.forEach(m => {
+    const p = state.profiles.find(x => x.id === m.profileId) || { name:'Member' };
+    const row = h('div', { class:'list-row' });
+    row.appendChild(h('div', { class:'avatar gold' }, [initials(p.name)]));
+    const info = h('div', { style:'flex:1;min-width:0;' });
+    info.appendChild(h('div', { style:'font-weight:800;' }, [p.name]));
+    info.appendChild(h('div', { class:'small muted' }, ['Matched ' + fmtDate(m.at)]));
+    row.appendChild(info);
+    const reveal = h('button', { class:'btn btn-gold btn-sm' }, ['Reveal contact']);
+    reveal.onclick = () => revealContact(p);
+    row.appendChild(reveal);
+    list.appendChild(row);
+  });
+  view.appendChild(list);
+}
+
+function revealContact(p){
+  if(state.member.plan !== 'elite' && state.member.plan !== 'diamond'){
+    openModal({
+      title: 'Contact reveal is a paid feature',
+      body: `<p class="muted small mb-2">Reveal phone number and email for <strong>${p.name}</strong> by upgrading to Gold, Diamond, or Sovereign Elite.</p>`,
+      actions: [
+        { label:'View plans', class:'btn-primary', onClick: () => navigate('#/plans') },
+        { label:'Not now', class:'btn-outline' },
+      ]
+    });
+    return;
+  }
+  openModal({
+    title: 'Contact revealed',
+    body: `
+      <div class="card pad" style="background:var(--cream);">
+        <div class="small muted">Phone</div><div style="font-weight:800;">+91 98•••• ••${(p.id||'').slice(-2)}</div>
+        <div class="small muted mt-2">Email</div><div style="font-weight:800;">${(p.name||'').toLowerCase().replace(/\s+/g,'.')}@example.com</div>
+      </div>
+      <p class="muted small mt-2">A gentle reminder: PMA does not facilitate chat or video inside the app. Continue the conversation by phone.</p>
+    `,
+    actions: [{ label:'Got it', class:'btn-primary' }]
+  });
+  audit('Contact revealed', p.name, 'member');
+}
+
+/* ============ FLOW 3 — PLANS ============ */
+const PLANS = {
+  gold:    { name:'Gold Privileges', price: 85000, period:'/ 6 months', badge:'SELF-SERVE', tagline:'Self-directed access with full privacy safeguards.' },
+  diamond: { name:'Diamond Alliance', price: 250000, period:'/ 12 months', badge:'GUIDED', tagline:'Guided matchmaking with a dedicated relationship executive.' },
+  elite:   { name:'Sovereign Elite', price: 650000, period:'starting', badge:'WHITE-GLOVE', tagline:'White-glove representation for UHNW families.' },
+};
+
+function viewPlans(view){
+  view.appendChild(h('div', { class:'page-head' }, [
+    h('div', { class:'eyebrow' }, ['Flow 3 — Subscription & Payment']),
+    h('h1', {}, ['Choose your membership']),
+    h('p', {}, ['Payment via Razorpay or PayU. GST invoice generated on activation. Elite members are assigned a Relationship Manager.']),
+  ]));
+
+  const grid = h('div', { class:'grid cols-3' });
+  Object.entries(PLANS).forEach(([key, p]) => {
+    const hl = key === 'diamond';
+    const c = h('div', { class:'card pad-lg', style: hl ? 'border:2px solid var(--gold);position:relative;box-shadow:0 24px 48px -16px rgba(201,162,39,0.28);' : 'position:relative;' });
+    if(hl) c.appendChild(h('div', { style:'position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--navy);font-size:11px;font-weight:800;padding:5px 14px;border-radius:20px;letter-spacing:0.5px;' }, ['MOST POPULAR']));
+    c.appendChild(h('div', { class:'row between mb-2' }, [
+      h('span', { class:'pill gold' }, [p.badge]),
+      state.member.plan === key ? h('span', { class:'pill ok' }, ['Current']) : null,
+    ].filter(Boolean)));
+    c.appendChild(h('h3', { style:'font-size:24px;margin-bottom:6px;' }, [p.name]));
+    c.appendChild(h('p', { class:'muted small mb-2' }, [p.tagline]));
+    c.appendChild(h('div', { style:'font-family:\'EB Garamond\';font-size:34px;color:var(--navy);' }, ['₹' + p.price.toLocaleString('en-IN')]));
+    c.appendChild(h('div', { class:'muted small' }, [p.period]));
+    const btn = h('button', { class:'btn ' + (hl ? 'btn-gold' : 'btn-outline') + ' btn-block mt-3' }, ['Choose ' + p.name]);
+    btn.onclick = () => {
+      state.member.plan = key;
+      saveState();
+      navigate('#/checkout');
+    };
+    c.appendChild(btn);
+    grid.appendChild(c);
+  });
+  view.appendChild(grid);
+}
+
+function viewCheckout(view){
+  const plan = PLANS[state.member.plan];
+  if(!plan){ navigate('#/plans'); return; }
+
+  view.appendChild(h('div', { class:'page-head' }, [
+    h('div', { class:'eyebrow' }, ['Checkout']),
+    h('h1', {}, ['Confirm and pay']),
+    h('p', {}, ['Simulated Razorpay / PayU checkout. No real charge is made.']),
+  ]));
+
+  const c = h('div', { class:'card pad-lg', style:'max-width:560px;' });
+  c.appendChild(h('h3', { style:'font-size:20px;margin-bottom:4px;' }, [plan.name]));
+  c.appendChild(h('p', { class:'muted small mb-2' }, [plan.tagline]));
+  c.appendChild(h('div', { class:'divider' }));
+  const total = plan.price;
+  const gst = Math.round(total * 0.18);
+  const grand = total + gst;
+  c.appendChild(summaryRow('Plan fee', '₹' + total.toLocaleString('en-IN')));
+  c.appendChild(summaryRow('GST (18%)', '₹' + gst.toLocaleString('en-IN')));
+  c.appendChild(h('div', { class:'divider' }));
+  c.appendChild(summaryRow('Total', '₹' + grand.toLocaleString('en-IN'), true));
+
+  const method = h('div', { class:'field mt-2' });
+  method.appendChild(h('label', {}, ['Payment method']));
+  const sel = h('select');
+  ['Razorpay — UPI / Card','PayU — Netbanking / Wallet'].forEach(o => sel.appendChild(h('option', {}, [o])));
+  method.appendChild(sel);
+  c.appendChild(method);
+
+  const row = h('div', { class:'row mt-2' });
+  const back = h('button', { class:'btn btn-outline' }, ['← Back']);
+  back.onclick = () => navigate('#/plans');
+  row.appendChild(back);
+  const pay = h('button', { class:'btn btn-gold', style:'flex:1;' }, ['Pay ₹' + grand.toLocaleString('en-IN') + ' →']);
+  pay.onclick = () => {
+    pay.disabled = true; pay.textContent = 'Processing…';
+    setTimeout(() => {
+      state.member.subscription = { plan: state.member.plan, startedAt: nowISO(), invoiceId: 'PMA-' + Date.now().toString().slice(-8), total: grand };
+      saveState();
+      audit('Subscription activated', plan.name, 'payment-webhook');
+      if(state.member.plan === 'elite'){
+        state.rm.assignedClients.unshift({
+          id: 'c' + Date.now().toString().slice(-5),
+          name: state.member.onboarding.details.name || 'New Elite Client',
+          plan: 'elite',
+          status: 'Awaiting RM assignment',
+        });
+        audit('Elite client queued for RM assignment', state.member.onboarding.details.name || 'New Elite Client', 'system');
+      }
+      saveState();
+      toast('Payment successful. Subscription activated.', 'ok');
+      navigate('#/invoice');
+    }, 1400);
+  };
+  row.appendChild(pay);
+  c.appendChild(row);
+  view.appendChild(c);
+}
+
+function summaryRow(k, v, big){
+  const r = h('div', { class:'row between', style:'padding:8px 0;' });
+  r.appendChild(h('div', { class:'muted small', style: big ? 'font-weight:800;color:var(--navy);' : '' }, [k]));
+  r.appendChild(h('div', { style: big ? 'font-family:\'EB Garamond\';font-size:26px;color:var(--navy);' : 'font-weight:700;' }, [v]));
+  return r;
+}
+
+function viewInvoice(view){
+  const s = state.member.subscription;
+  if(!s){ navigate('#/plans'); return; }
+  const plan = PLANS[s.plan];
+
+  view.appendChild(h('div', { class:'page-head' }, [
+    h('div', { class:'eyebrow' }, ['Payment Successful']),
+    h('h1', {}, ['Subscription activated']),
+    h('p', {}, ['A GST invoice has been generated. Your features are now unlocked.']),
+  ]));
+
+  const c = h('div', { class:'card pad-lg', style:'max-width:560px;' });
+  c.appendChild(h('div', { class:'pill ok mb-2' }, ['✓ Paid']));
+  c.appendChild(h('h3', { style:'font-size:20px;margin-bottom:4px;' }, [plan.name]));
+  c.appendChild(h('p', { class:'muted small mb-2' }, ['Invoice ' + s.invoiceId + ' • ' + fmtDate(s.startedAt)]));
+  c.appendChild(h('div', { class:'divider' }));
+  c.appendChild(summaryRow('Amount charged', '₹' + s.total.toLocaleString('en-IN')));
+  c.appendChild(summaryRow('Payment method', 'Razorpay (simulated)'));
+  c.appendChild(summaryRow('Status', 'Active'));
+
+  if(s.plan === 'elite'){
+    c.appendChild(h('div', { class:'divider' }));
+    c.appendChild(h('div', { class:'pill gold mb-2' }, ['Sovereign Elite']));
+    c.appendChild(h('p', { class:'muted small' }, ['A Senior Family Matrimonial Officer will be assigned to you. You will receive a personal introduction from your RM within 24 hours.']));
+  }
+
+  const row = h('div', { class:'row mt-3' });
+  const b1 = h('button', { class:'btn btn-primary', style:'flex:1;' }, ['Go to Discover →']);
+  b1.onclick = () => navigate('#/discover');
+  row.appendChild(b1);
+  const b2 = h('button', { class:'btn btn-outline' }, ['View invoice']);
+  b2.onclick = () => toast('Invoice PDF would download here in production.', 'info');
+  row.appendChild(b2);
+  c.appendChild(row);
+  view.appendChild(c);
+}
+
+/* ============ FLOW 4 — RM WORKFLOW ============ */
+function viewRM(view){
+  view.appendChild(h('div', { class:'page-head' }, [
+    h('div', { class:'eyebrow' }, ['Flow 4 — Matchmaker / RM Workflow']),
+    h('h1', {}, ['RM Workspace']),
+    h('p', {}, ['Assigned Elite clients, suggested matches, scheduled calls, notes, and audit trail.']),
+  ]));
+
+  if(!state.rm.assignedClients.length){
+    state.rm.assignedClients = [
+      { id:'c1001', name:'Priya S.', plan:'elite', status:'Active', prefs:'26–30 yrs, Chennai/Bangalore, IT/Finance', horoscope:'Required' },
+      { id:'c1002', name:'Arjun K.', plan:'elite', status:'Active', prefs:'28–34 yrs, Pan-India, Medicine/Law', horoscope:'Required' },
+      { id:'c1003', name:'Divya R.', plan:'elite', status:'Awaiting RM assignment', prefs:'30–38 yrs, Mumbai, Business family', horoscope:'Optional' },
+    ];
+    saveState();
+  }
+
+  const k = h('div', { class:'grid cols-4 mb-3' });
+  k.appendChild(kpi('Assigned clients', String(state.rm.assignedClients.length)));
+  k.appendChild(kpi('Pending assignment', String(state.rm.assignedClients.filter(c => c.status === 'Awaiting RM assignment').length)));
+  k.appendChild(kpi('Scheduled calls', String(state.rm.callLog.length)));
+  k.appendChild(kpi('Audit entries', String(state.rm.auditLog.length)));
+  view.appendChild(k);
+
+  const listCard = h('div', { class:'card pad-lg' });
+  listCard.appendChild(h('h3', { style:'font-size:20px;margin-bottom:12px;' }, ['My assigned clients']));
+  const list = h('div', { class:'grid' });
+  state.rm.assignedClients.forEach(cl => {
+    const row = h('div', { class:'list-row' });
+    row.appendChild(h('div', { class:'avatar gold' }, [initials(cl.name)]));
+    const info = h('div', { style:'flex:1;min-width:0;' });
+    info.appendChild(h('div', { style:'font-weight:800;' }, [cl.name]));
+    info.appendChild(h('div', { class:'small muted' }, [(cl.plan === 'elite' ? 'Sovereign Elite' : cl.plan) + ' • ' + cl.status]));
+    row.appendChild(info);
+    const open = h('button', { class:'btn btn-outline btn-sm' }, ['Open workspace →']);
+    open.onclick = () => navigate('#/rm-client/' + cl.id);
+    row.appendChild(open);
+    list.appendChild(row);
+  });
+  listCard.appendChild(list);
+  view.appendChild(listCard);
+}
+
+function viewRMClient(id){
+  const cl = state.rm.assignedClients.find(c => c.id === id);
+  const view = $('#view');
+  view.innerHTML = '';
+  if(!cl){ view.appendChild(h('p', { class:'muted' }, ['Client not found.'])); return; }
+
+  const back = h('button', { class:'btn btn-outline mb-2' }, ['← Back to RM Workspace']);
+  back.onclick = () => navigate('#/rm');
+  view.appendChild(back);
+
+  view.appendChild(h('div', { class:'page-head' }, [
+    h('div', { class:'eyebrow' }, ['Flow 4 — Client Workspace']),
+    h('h1', {}, [cl.name]),
+    h('p', {}, [cl.plan === 'elite' ? 'Sovereign Elite member' : cl.plan + ' member']),
+  ]));
+
+  const summary = h('div', { class:'card pad-lg mb-3' });
+  summary.appendChild(h('h3', { style:'font-size:18px;margin-bottom:10px;' }, ['Client summary']));
+  summary.appendChild(summaryRow('Status', cl.status));
+  summary.appendChild(summaryRow('Preferences', cl.prefs));
+  summary.appendChild(summaryRow('Horoscope match', cl.horoscope));
+  view.appendChild(summary);
+
+  const actions = h('div', { class:'grid cols-3' });
+  actions.appendChild(rmAction('✦','Suggest matches','Manual + algorithmic suggestions.', () => suggestMatches(cl)));
+  actions.appendChild(rmAction('☎','Schedule call','Log a scheduled call with the client.', () => scheduleCall(cl)));
+  actions.appendChild(rmAction('✎','Add note','Log preferences and outcome.', () => addNote(cl)));
+  actions.appendChild(rmAction('✔','Contact client','Log permission and outreach.', () => contactClient(cl)));
+  actions.appendChild(rmAction('◈','Manual match','Hand-pick a candidate and send.', () => manualMatch(cl)));
+  actions.appendChild(rmAction('▤','View audit trail','Every action captured.', () => navigate('#/audit')));
+  view.appendChild(actions);
+
+  const notesCard = h('div', { class:'card pad-lg mt-3' });
+  notesCard.appendChild(h('h3', { style:'font-size:18px;margin-bottom:10px;' }, ['Notes']));
+  const notes = state.rm.notes[cl.id] || [];
+  if(!notes.length){
+    notesCard.appendChild(h('p', { class:'muted small' }, ['No notes yet.']));
+  } else {
+    notes.forEach(n => {
+      const nEl = h('div', { class:'card pad mb-2', style:'background:var(--cream);' });
+      nEl.appendChild(h('div', { class:'small muted' }, [fmtDate(n.at)]));
+      nEl.appendChild(h('div', { style:'margin-top:4px;' }, [n.text]));
+      notesCard.appendChild(nEl);
+    });
+  }
+  view.appendChild(notesCard);
+}
+
+function rmAction(ico, title, desc, onClick){
+  const c = h('div', { class:'card pad', style:'cursor:pointer;' });
+  c.appendChild(h('div', { style:'font-size:20px;color:var(--gold);margin-bottom:8px;' }, [ico]));
+  c.appendChild(h('h4', { style:'font-size:15px;margin-bottom:4px;' }, [title]));
+  c.appendChild(h('p', { class:'muted small' }, [desc]));
+  c.onclick = onClick;
+  return c;
+}
+
+function suggestMatches(cl){
+  const suggestions = state.profiles.slice(0,3);
+  const body = suggestions.map(p => `
+    <div class="list-row" style="margin-bottom:8px;">
+      <div class="avatar">${initials(p.name)}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:800;">${p.name}, ${p.age}</div>
+        <div class="small muted">${p.city} • ${p.role}</div>
+        <div class="small muted">Score 8.4/10</div>
+      </div>
+      <button class="btn btn-gold btn-sm" onclick="alert('Sent to client: ${p.name}')">SEND</button>
+    </div>
+  `).join('');
+  openModal({
+    title: 'Suggested matches',
+    body: `<p class="muted small mb-2">Algorithmic shortlist for <strong>${cl.name}</strong>.</p>${body}`,
+    actions: [{ label:'Close', class:'btn-outline' }]
+  });
+  audit('Suggested matches', cl.name, 'rm');
+}
+
+function scheduleCall(cl){
+  openModal({
+    title: 'Schedule call',
+    body: `
+      <div class="field"><label>Date & time</label><input type="datetime-local" id="callAt"></div>
+      <div class="field"><label>Agenda (optional)</label><input type="text" id="callAgenda" placeholder="e.g. Introduction call"></div>
+    `,
+    actions: [
+      { label:'Save', class:'btn-primary', onClick: () => {
+        state.rm.callLog.unshift({ clientId: cl.id, at: nowISO(), when: $('#callAt')?.value || nowISO() });
+        saveState();
+        audit('Scheduled call', cl.name, 'rm');
+        toast('Call scheduled.', 'ok');
+      }},
+      { label:'Cancel', class:'btn-outline' }
+    ]
+  });
+}
+
+function addNote(cl){
+  openModal({
+    title: 'Add note',
+    body: `
+      <div class="field"><label>Note</label><textarea id="noteText" rows="4" placeholder="Preferences, outcome, next step…"></textarea></div>
+    `,
+    actions: [
+      { label:'Save note', class:'btn-primary', onClick: () => {
+        const t = $('#noteText')?.value.trim();
+        if(!t){ toast('Note cannot be empty.', 'err'); return; }
+        state.rm.notes[cl.id] = state.rm.notes[cl.id] || [];
+        state.rm.notes[cl.id].unshift({ at: nowISO(), text: t });
+        saveState();
+        audit('Added note', cl.name, 'rm');
+        toast('Note saved.', 'ok');
+        if(state.route.startsWith('#/rm-client')) render();
+      }},
+      { label:'Cancel', class:'btn-outline' }
+    ]
+  });
+}
+
+function contactClient(cl){
+  openModal({
+    title: 'Contact client',
+    body: `<p class="muted small mb-2">Outreach to <strong>${cl.name}</strong> requires a permission log. This is captured in the audit trail.</p>
+    <div class="field"><label>Channel</label><select id="contactChannel"><option>Phone</option><option>Email</option><option>WhatsApp (business)</option></select></div>
+    <div class="field"><label>Permission reference (optional)</label><input id="permRef" placeholder="e.g. consent logged 12 Aug"></div>`,
+    actions: [
+      { label:'Log & contact', class:'btn-primary', onClick: () => {
+        audit('Contacted client', cl.name, 'rm');
+        toast('Outreach logged.', 'ok');
+      }},
+      { label:'Cancel', class:'btn-outline' }
+    ]
+  });
+}
+
+function manualMatch(cl){
+  const body = state.profiles.slice(0,4).map(p => `
+    <div class="list-row" style="margin-bottom:8px;">
+      <div class="avatar">${initials(p.name)}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:800;">${p.name}, ${p.age}</div>
+        <div class="small muted">${p.city} • ${p.role}</div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="alert('Selected: ${p.name}')">Select</button>
+    </div>
+  `).join('');
+  openModal({
+    title: 'Manual match',
+    body: `<p class="muted small mb-2">Hand-pick a candidate for <strong>${cl.name}</strong>.</p>${body}`,
+    actions: [{ label:'Close', class:'btn-outline' }]
+  });
+}
+
+function viewAudit(view){
+  view.appendChild(h('div', { class:'page-head' }, [
+    h('div', { class:'eyebrow' }, ['Audit Trail']),
+    h('h1', {}, ['Every action, captured']),
+    h('p', {}, ['RBAC + admin visibility. No staff action is left untracked.']),
+  ]));
+
+  const card = h('div', { class:'card pad-lg' });
+  if(!state.rm.auditLog.length){
+    card.appendChild(h('p', { class:'muted small' }, ['No audit entries yet. Take an action in the app to see it appear here.']));
+  } else {
+    const table = h('div');
+    state.rm.auditLog.slice(0,60).forEach(e => {
+      const row = h('div', { class:'list-row mb-2' });
+      row.appendChild(h('div', { class:'avatar' }, [initials(e.actor)]));
+      const info = h('div', { style:'flex:1;min-width:0;' });
+      info.appendChild(h('div', { style:'font-weight:700;' }, [e.action]));
+      info.appendChild(h('div', { class:'small muted' }, ['Target: ' + e.target + ' • ' + e.actor]));
+      row.appendChild(info);
+      row.appendChild(h('div', { class:'small muted mono' }, [fmtDate(e.at)]));
+      table.appendChild(row);
+    });
+    card.appendChild(table);
+  }
+  view.appendChild(card);
+}
+
+function viewAdmin(view){
+  view.appendChild(h('div', { class:'page-head' }, [
+    h('div', { class:'eyebrow' }, ['Admin Dashboard']),
+    h('h1', {}, ['Platform overview']),
+    h('p', {}, ['KPIs, KYC queue, and RM assignment for Elite clients.']),
+  ]));
+
+  const k = h('div', { class:'grid cols-4 mb-3' });
+  k.appendChild(kpi('Assigned clients', String(state.rm.assignedClients.length)));
+  k.appendChild(kpi('Pending assignment', String(state.rm.assignedClients.filter(c => c.status === 'Awaiting RM assignment').length)));
+  k.appendChild(kpi('Audit entries', String(state.rm.auditLog.length)));
+  k.appendChild(kpi('Verified profiles', String(state.profiles.filter(p => p.verified).length)));
+  view.appendChild(k);
+
+  const card = h('div', { class:'card pad-lg mb-3' });
+  card.appendChild(h('h3', { style:'font-size:18px;margin-bottom:10px;' }, ['Elite client queue']));
+  if(!state.rm.assignedClients.length){
+    card.appendChild(h('p', { class:'muted small' }, ['No Elite clients in queue.']));
+  } else {
+    state.rm.assignedClients.forEach(cl => {
+      const row = h('div', { class:'list-row mb-2' });
+      row.appendChild(h('div', { class:'avatar gold' }, [initials(cl.name)]));
+      const info = h('div', { style:'flex:1;min-width:0;' });
+      info.appendChild(h('div', { style:'font-weight:800;' }, [cl.name]));
+      info.appendChild(h('div', { class:'small muted' }, [cl.status]));
+      row.appendChild(info);
+      if(cl.status === 'Awaiting RM assignment'){
+        const assign = h('button', { class:'btn btn-gold btn-sm' }, ['Assign RM']);
+        assign.onclick = () => {
+          cl.status = 'Active';
+          cl.assignedRM = 'Senior RM';
+          saveState();
+          audit('RM assigned', cl.name, 'admin');
+          toast('RM assigned to ' + cl.name, 'ok');
+          render();
+        };
+        row.appendChild(assign);
+      } else {
+        row.appendChild(h('span', { class:'pill ok' }, ['Assigned']));
+      }
+      card.appendChild(row);
+    });
+  }
+  view.appendChild(card);
+
+  const shortcut = h('button', { class:'btn btn-outline' }, ['Open RM Workspace →']);
+  shortcut.onclick = () => navigate('#/rm');
+  view.appendChild(shortcut);
+}
+
+function viewMe(view){
+  const d = state.member.onboarding.details;
+  view.appendChild(h('div', { class:'page-head' }, [
+    h('div', { class:'eyebrow' }, ['My Profile']),
+    h('h1', {}, [d.name || 'Your profile']),
+    h('p', {}, [state.member.onboarding.live ? 'Verified and live.' : 'Complete onboarding to publish your profile.']),
+  ]));
+
+  const card = h('div', { class:'card pad-lg', style:'max-width:640px;' });
+  const fields = [
+    ['Name', d.name],
+    ['Date of birth', d.dob],
+    ['Gender', d.gender],
+    ['Community', d.community],
+    ['City', d.city],
+    ['Education', d.education],
+    ['Profession', d.profession],
+    ['Plan', state.member.plan ? PLANS[state.member.plan]?.name : '—'],
+  ];
+  fields.forEach(([k,v]) => card.appendChild(summaryRow(k, v || '—')));
+  view.appendChild(card);
+
+  const row = h('div', { class:'row mt-3' });
+  const edit = h('button', { class:'btn btn-outline' }, ['Edit basic details']);
+  edit.onclick = () => navigate('#/onboarding/details');
+  row.appendChild(edit);
+  const reset = h('button', { class:'btn btn-danger' }, ['Reset demo']);
+  reset.onclick = () => { if(confirm('Reset all demo data?')) resetState(); };
+  row.appendChild(reset);
+  view.appendChild(row);
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+function boot(){
+  if(window.location.hash) state.route = window.location.hash;
+
+  $$('#roleSwitch button').forEach(b => {
+    b.addEventListener('click', () => {
+      state.role = b.dataset.role;
+      saveState();
+      $$('#roleSwitch button').forEach(x => x.classList.toggle('active', x === b));
+      if(state.role === 'rm' && !state.route.startsWith('#/rm')) navigate('#/rm');
+      else if(state.role === 'admin') navigate('#/admin');
+      else if(state.role === 'member' && !state.route.startsWith('#/')) navigate('#/home');
+      else render();
+    });
+  });
+  $$('#roleSwitch button').forEach(b => b.classList.toggle('active', b.dataset.role === state.role));
+
+  $('#resetBtn').addEventListener('click', () => { if(confirm('Reset all demo data?')) resetState(); });
+  $('#menuBtn').addEventListener('click', () => {
+    const sn = $('#sidenav');
+    if(sn.style.display === 'block'){ sn.style.display = 'none'; return; }
+    sn.style.display = 'block';
+    sn.style.position = 'fixed';
+    sn.style.left = '0'; sn.style.right = '0'; sn.style.top = 'var(--topbar-h)';
+    sn.style.bottom = '0'; sn.style.width = 'auto';
+    sn.style.zIndex = '45';
+    setTimeout(() => {
+      sn.addEventListener('click', e => {
+        if(e.target.tagName === 'A'){ sn.style.display = 'none'; }
+      });
+    }, 0);
+  });
+
+  render();
+}
+boot();
+</script>
+</body>
+</html>
